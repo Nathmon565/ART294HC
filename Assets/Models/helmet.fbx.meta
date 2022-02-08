@@ -3,7 +3,37 @@ guid: a25728707056de748832fd176da934d2
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Brass
+    second: {fileID: 2100000, guid: 7f77297e5045a8e4ab672ad5b2f4882a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Deep Sea Metal
+    second: {fileID: 2100000, guid: 083ee347a1fd1644dbe95acb43269131, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Deep Sea Polymer
+    second: {fileID: 2100000, guid: e6365ee7107e28440a59b8d76f9791a3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Glass
+    second: {fileID: 2100000, guid: e31d7110386523c45882524ac615dbf8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Light
+    second: {fileID: 2100000, guid: 1aad15a9a2ec7ff44ad10d0b94838521, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rubber
+    second: {fileID: 2100000, guid: fecea21e8200a1d4a9b53138363f27a2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
