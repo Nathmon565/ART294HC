@@ -27,10 +27,9 @@ public class PlayerController : MonoBehaviour {
 	private void Update() {
 		deltaRot = view.transform.eulerAngles - lastRot;
 		deltaV = rb.velocity - lastV;
-		//TODO better rotation
-		transform.localEulerAngles += new Vector3(0, Input.GetAxis("Mouse X"), 0) * sensitivity;
-		view.transform.localEulerAngles += new Vector3(-Input.GetAxis("Mouse Y"), 0, 0) * sensitivity;
-		// transform.localEulerAngles = new Vector3(GameControl.ClampAngle((transform.localEulerAngles.x), 265, 85), transform.localEulerAngles.y, transform.localEulerAngles.z);
+		transform.localEulerAngles += new Vector3(0, Input.GetAxis("Mouse X") * sensitivity, 0);
+		float yrot = GameControl.ClampAngle(view.transform.localEulerAngles.x - Input.GetAxis("Mouse Y") * sensitivity, -89.5f, 89.5f);
+		view.transform.localEulerAngles = new Vector3(yrot, view.transform.localEulerAngles.y, view.transform.localEulerAngles.z);
 
 		if (Input.GetKeyDown(KeyCode.F)) {
 			suitAnimator.Play("suit_equip");
