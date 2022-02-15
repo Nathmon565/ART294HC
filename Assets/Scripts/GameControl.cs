@@ -1,6 +1,14 @@
 using UnityEngine;
 public class GameControl : MonoBehaviour {
 
+	public static GameControl gc;
+	public AudioController ac;
+
+	private void Awake() {
+		if (gc == null) { gc = this; }
+		if (ac == null) { ac = GetComponent<AudioController>(); }
+	}
+
 	///<summary>
 	///Clamps a rotation inversely around two angles. Opposite of a normal clamp, works with angles.
 	///<param name="angle">The value to be clamped and returned</param>
