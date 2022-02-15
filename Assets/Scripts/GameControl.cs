@@ -7,7 +7,7 @@ public class GameControl : MonoBehaviour {
 	///<param name="maxAngle">The maximum (top) value of the clamp and circle. This should be negative.</param>
 	///<param name="minAngle">The minimum (bottom) value of the clamp and circle. This should be positive.</param>
 	///</summary>
-	public static float ClampAngle(float angle, float maxAngle, float minAngle)	{
+	public static float ClampAngle(float angle, float maxAngle, float minAngle) {
 		angle = Mathf.Repeat(angle, 360);
 		maxAngle = Mathf.Repeat(maxAngle, 360);
 		minAngle = Mathf.Repeat(minAngle, 360);
@@ -17,8 +17,8 @@ public class GameControl : MonoBehaviour {
 		//TODO BUG tank destroyer angle when it crosses 0/360 it goes to the opposite clamp
 		if (maxAngle == 360) { maxAngle++; }
 		if (minAngle == 360) { minAngle++; }
-		if (maxAngle >= halfwayMod) 		{
-			if (angle > halfwayMod) 			{
+		if (maxAngle >= halfwayMod) {
+			if (angle > halfwayMod) {
 				return Mathf.Max(angle, maxAngle);
 			}
 			return Mathf.Min(angle, minAngle);

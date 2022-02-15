@@ -30,4 +30,8 @@ public class HelmetFollowDelay : MonoBehaviour {
 		// transform.localPosition += PlayerController.pc.rb.velocity;
 		// transform.localPosition = Vector3.Slerp(transform.localPosition, new Vector3(), smooth * Time.deltaTime);
 	}
+
+	public void PlaySound(string sound) {
+		GameControl.gc.ac.PlaySound(sound, transform);
+	}
 }
