@@ -10,12 +10,12 @@ public class HelmetFollowDelay : MonoBehaviour {
 	public Animator animator;
 	public Animation equipAnimation;
 	private void Start() {
-		if(target == null) { target = Camera.main.transform; }
-		if(animator == null) { animator = GetComponent<Animator>(); }
+		if (target == null) { target = Camera.main.transform; }
+		if (animator == null) { animator = GetComponent<Animator>(); }
 	}
 	void LateUpdate() {
 
-		if(PlayerController.pc.helmetEquipped && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_equipped_idle")) {
+		if (PlayerController.pc.helmetEquipped && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_equipped_idle")) {
 			float mouseX = Input.GetAxisRaw("Mouse X") * mult;
 			float mouseY = Input.GetAxisRaw("Mouse Y") * mult;
 
@@ -32,6 +32,12 @@ public class HelmetFollowDelay : MonoBehaviour {
 	}
 
 	public void PlaySound(string sound) {
-		GameControl.gc.ac.PlaySound(sound, transform);
+
+		string[] s = sound.Split('=');
+		if (s[0] == "f" && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_equip")) {
+			GameControl.gc.ac.PlaySound(s[1], transform);
+		} else if (s[0] == "b" && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_unequip")) {
+			GameControl.gc.ac.PlaySound(s[1], transform);
+		}
 	}
 }
