@@ -5,6 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 	public static PlayerController pc;
 
+	[Range(0, 5)]
+	public float maxInteractionDistance = 2;
 	public bool helmetEquipped = false;
 
 	public Vector3 deltaRot = new Vector3();
@@ -25,6 +27,9 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	private void Update() {
+		Debug.DrawRay(view.transform.position, view.transform.forward * maxInteractionDistance, Color.red);
+
+
 		deltaRot = view.transform.eulerAngles - lastRot;
 		deltaV = rb.velocity - lastV;
 		transform.localEulerAngles += new Vector3(0, Input.GetAxis("Mouse X") * sensitivity, 0);
