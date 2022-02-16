@@ -34,10 +34,11 @@ public class HelmetFollowDelay : MonoBehaviour {
 	public void PlaySound(string sound) {
 
 		string[] s = sound.Split('=');
+		Vector3 v = new Vector3(0, 0.1f, 0);
 		if (s[0] == "f" && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_equip")) {
-			GameControl.gc.ac.PlaySound(s[1], transform);
+			GameControl.gc.ac.PlaySound(s[1], transform, v);
 		} else if (s[0] == "b" && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_unequip")) {
-			GameControl.gc.ac.PlaySound(s[1], transform);
+			GameControl.gc.ac.PlaySound(s[1], transform, v);
 		}
 	}
 }

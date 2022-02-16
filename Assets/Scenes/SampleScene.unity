@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -625,6 +625,30 @@ MonoBehaviour:
     audioMixerGroup: {fileID: 24300002, guid: 711e8a47eae8ee74bad3c217c33ad73a, type: 2}
     playOnAwake: 0
     source: {fileID: 0}
+  - name: door_granted
+    clip: {fileID: 8300000, guid: 95a95e9a899bc60458c8a5e75ed215c4, type: 3}
+    alternates: []
+    volume: 1
+    pitch: 1
+    spacialBlend: 1
+    loop: 0
+    audioRolloffMode: 1
+    bypassEffects: 0
+    audioMixerGroup: {fileID: 24300002, guid: 711e8a47eae8ee74bad3c217c33ad73a, type: 2}
+    playOnAwake: 0
+    source: {fileID: 0}
+  - name: door_denied
+    clip: {fileID: 8300000, guid: adc316ce02d7739458b4dc6923e953c9, type: 3}
+    alternates: []
+    volume: 1
+    pitch: 1
+    spacialBlend: 1
+    loop: 0
+    audioRolloffMode: 1
+    bypassEffects: 0
+    audioMixerGroup: {fileID: 24300002, guid: 711e8a47eae8ee74bad3c217c33ad73a, type: 2}
+    playOnAwake: 0
+    source: {fileID: 0}
   - name: 
     clip: {fileID: 0}
     alternates: []
@@ -1036,7 +1060,7 @@ MonoBehaviour:
   fillAmount: 0.2
   lineColor0: {r: 1, g: 1, b: 0, a: 1}
   lineColor1: {r: 0, g: 1, b: 0, a: 1}
-  lineColor2: {r: 0, g: 0, b: 1, a: 1}
+  lineColor2: {r: 1, g: 0, b: 0, a: 1}
   additiveRendering: 0
   backfaceCulling: 1
   fillColor: {r: 0, g: 0, b: 1, a: 1}
@@ -1369,6 +1393,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outline: {fileID: 0}
+  target: {fileID: 0}
+  door: {fileID: 0}
 --- !u!114 &1399931562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1430,7 +1456,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbb12292e3a10ca499ed06d8a4f8e48a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isOpen: 1
+  isOpen: 0
+  moving: 0
   mainDoor: {fileID: 981486575}
   otherDoor: {fileID: 312374681}
   targetPos: {x: 1, y: 0, z: 0}
@@ -1555,6 +1582,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outline: {fileID: 0}
+  target: {fileID: 0}
+  door: {fileID: 0}
 --- !u!65 &1947828299
 BoxCollider:
   m_ObjectHideFlags: 0
