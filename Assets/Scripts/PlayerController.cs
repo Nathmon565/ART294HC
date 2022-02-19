@@ -62,7 +62,7 @@ public class PlayerController : MonoBehaviour {
 			input += new Vector3(1, 0, 0);
 		}
 		input.Normalize();
-		rb.velocity = transform.TransformVector(input * moveSpeed);
+		rb.velocity = transform.TransformVector(input * moveSpeed) + new Vector3(0, rb.velocity.y, 0);
 	}
 
 	private void LateUpdate() {
