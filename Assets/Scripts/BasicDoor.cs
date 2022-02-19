@@ -12,8 +12,14 @@ public class BasicDoor : MonoBehaviour {
 	private void Update() {
 		Vector3 p = isOpen ? targetPos : new Vector3();
 		moving = Vector3.Distance(mainDoor.transform.localPosition, p) > 0.1f;
-		mainDoor.transform.localPosition = Vector3.MoveTowards(mainDoor.transform.localPosition, p, doorSpeed * Time.deltaTime);
-		otherDoor.transform.localPosition = Vector3.MoveTowards(otherDoor.transform.localPosition, -p, doorSpeed * Time.deltaTime);
+		if (mainDoor != null) {
+			mainDoor.transform.localPosition = Vector3.MoveTowards(mainDoor.transform.localPosition, p, doorSpeed * Time.deltaTime);
+		}
+		if (otherDoor != null) {
+			otherDoor.transform.localPosition = Vector3.MoveTowards(otherDoor.transform.localPosition, -p, doorSpeed * Time.deltaTime);
+		}
+
+
 	}
 	public void ToggleState() {
 		isOpen = !isOpen;
