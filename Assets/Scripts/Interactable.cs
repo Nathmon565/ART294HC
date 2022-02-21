@@ -1,16 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using cakeslice;
+using HighlightPlus;
 
-[RequireComponent(typeof(Outline))]
+[RequireComponent(typeof(HighlightEffect))]
 public class Interactable : MonoBehaviour {
-	public Outline outline;
+	public HighlightEffect highlight;
+	public HighlightProfile active;
+	public HighlightProfile disabled;
 	public GameObject target;
 	public BasicDoor door;
 	private Transform playerView;
 	private void Awake() {
-		if (outline == null) { outline = GetComponent<Outline>(); }
+		if (highlight == null) { highlight = GetComponent<HighlightEffect>(); }
 		if (target == null) { target = transform.parent.gameObject; }
 		if (door == null) { door = target.GetComponent<BasicDoor>(); }
 	}
@@ -22,23 +24,25 @@ public class Interactable : MonoBehaviour {
 	}
 
 	private void Update() {
-
-		outline.eraseRenderer = Vector3.Distance(transform.position, playerView.position) > PlayerController.pc.maxInteractionDistance;
-		if (Physics.Raycast(playerView.position, playerView.forward, out RaycastHit hit, PlayerController.pc.maxInteractionDistance) && hit.transform == transform) {
+		if (Physics.Raycast(playerView.position, playerView.forward, out RaycastHit hit, HighlightManager.instance.maxDistance) && hit.transform == transform) {
 			if (door.moving) {
-				outline.color = 2;
+				if (highlight.profile != disabled) {
+					highlight.profile = disabled;
+					highlight.ProfileReload();
+				}
 				if (Input.GetKeyDown(KeyCode.E)) {
 					GameControl.gc.ac.PlaySound("door_denied", 0, transform);
 				}
 			} else {
-				outline.color = 1;
+				if (highlight.profile != active) {
+					highlight.profile = active;
+					highlight.ProfileReload();
+				}
 				if (Input.GetKeyDown(KeyCode.E)) {
 					target.GetComponent<BasicDoor>().isOpen = !target.GetComponent<BasicDoor>().isOpen;
 					GameControl.gc.ac.PlaySound("door_granted", 0, transform);
 				}
 			}
-		} else {
-			outline.color = 0;
 		}
 	}
 }
