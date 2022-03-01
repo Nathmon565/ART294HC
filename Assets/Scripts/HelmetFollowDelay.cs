@@ -14,6 +14,7 @@ public class HelmetFollowDelay : MonoBehaviour {
 		if (animator == null) { animator = GetComponent<Animator>(); }
 	}
 	void LateUpdate() {
+		transform.GetChild(0).gameObject.SetActive(PlayerController.pc.helmetEquipped);
 
 		if (PlayerController.pc.helmetEquipped && animator.GetCurrentAnimatorStateInfo(0).IsName("helmet_equipped_idle")) {
 			float mouseX = Input.GetAxisRaw("Mouse X") * mult;

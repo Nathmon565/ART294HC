@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Deep Sea Metal
+    second: {fileID: 2100000, guid: 083ee347a1fd1644dbe95acb43269131, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Glass
     second: {fileID: 2100000, guid: e31d7110386523c45882524ac615dbf8, type: 2}
   - first:
@@ -29,6 +34,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: LED Red
     second: {fileID: 2100000, guid: 3ee79213e7e975b418b8c0022be16586, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Light
+    second: {fileID: 2100000, guid: 1aad15a9a2ec7ff44ad10d0b94838521, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
