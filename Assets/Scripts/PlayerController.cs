@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	private void Update() {
-		Debug.DrawRay(view.transform.position, view.transform.forward * HighlightPlus.HighlightManager.instance.maxDistance, Color.red);
+		//Debug.DrawRay(view.transform.position, view.transform.forward * HighlightPlus.HighlightManager.instance.maxDistance, Color.red);
 
 
 		deltaRot = view.transform.eulerAngles - lastRot;

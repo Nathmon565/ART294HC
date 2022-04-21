@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class LightController : MonoBehaviour {
-	public bool isActive;
+	public bool isActive = false;
 	public int lightIndex = 0;
 	public List<Light> l;
 	private MeshRenderer mr;
 
-	private void Awake() {
+	private void Start() {
 		if(TryGetComponent<Light>(out Light light)) { l.Add(light); }
 		foreach(GameObject c in transform) {
 			if(TryGetComponent<Light>(out light)) { l.Add(light); }
 		}
 		mr = GetComponent<MeshRenderer>();
-		SetActive(isActive);
+		SetActive(false);
 	}
 
 	[ContextMenu("Toggle Active")]

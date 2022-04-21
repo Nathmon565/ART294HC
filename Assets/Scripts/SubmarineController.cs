@@ -25,7 +25,7 @@ public class SubmarineController : MonoBehaviour {
 	public ControlBoardButton buttonEngineThrust;
 	[Range(0, 1)]
 	public float engineThrustTarget;
-	[Range(0, 1)]
+	[Range(-1, 1)]
 	public float engineThrustActual;
 	public float engineVelocity = 0;
 	public ControlBoardButton buttonEnginePowerIndicator;
@@ -72,6 +72,8 @@ public class SubmarineController : MonoBehaviour {
 	[Header("Stats")]
 	[Range(0, 1)]
 	public float airQuality = 1;
+	public Vector3 velocity = Vector3.zero;
+	public Vector3 angularVelocity = Vector3.zero;
 	[Header("Settings")]
 	public float dampSmoothTime = 1f;
 	public float dampMaxSpeedBallast = 0.1f;
@@ -82,6 +84,7 @@ public class SubmarineController : MonoBehaviour {
 	public List<LightController> internalLightList;
 	public List<LightController> externalLightList;
 	public SubPropellor propellor;
+	public GameObject rudder;
 
 	public float GetPumpWork() {
 		return Mathf.Abs(ballastLevelBackActual - ballastLevelBackTarget) + Mathf.Abs(ballastLevelFrontActual - ballastLevelFrontTarget);
@@ -134,7 +137,34 @@ public class SubmarineController : MonoBehaviour {
 		SetButton(buttonSonarPowerIndicator, sonarPower && isReactorOn ? 1 : 0);
 		SetButton(buttonSonarType, sonarDirectionType ? 1 : 0);
 
-		propellor.speed = engineThrustActual * (engineReverse ? -240 : 240);
+		propellor.speed = engineThrustActual * 240;
+		rudder.transform.localEulerAngles = new Vector3(rudder.transform.localEulerAngles.x, -(rudderDirectionActual-0.5f) * 45, rudder.transform.localEulerAngles.z);
+	}
+
+	private void FixedUpdate() {
+		//update position based on velocity
+		transform.position += new Vector3(0, velocity.y, 0) * Time.deltaTime;
+		transform.position += transform.TransformVector(new Vector3(0, 0, velocity.z) * Time.deltaTime);
+		//transform.position += transform.TransformVector(velocity * Time.fixedDeltaTime);
+		//update rotation based on angular velocity
+		transform.eulerAngles += transform.TransformVector(angularVelocity * Time.fixedDeltaTime);
+		transform.eulerAngles = new Vector3(GameControl.ClampAngle(transform.eulerAngles.x, -45, 45), transform.eulerAngles.y, GameControl.ClampAngle(transform.eulerAngles.z, -15, 15));
+
+		transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0, transform.eulerAngles.y, 0), Time.fixedDeltaTime / 5f);
+
+		//increase velocity
+		velocity += Time.fixedDeltaTime * new Vector3(0,
+			(-(ballastLevelFrontActual + ballastLevelBackActual)/2 + 0.5f) / 5f, //ballast
+			engineThrustActual); //engine
+		//rudder & ballast
+		angularVelocity += Time.fixedDeltaTime * new Vector3(
+			(ballastLevelFrontActual - ballastLevelBackActual) * 5,
+			2 * (rudderDirectionActual - 0.5f) * (velocity.z), //rudder
+			0);
+
+		//slow dowm from friction/drag
+		velocity -= velocity * 0.01f;
+		angularVelocity -= angularVelocity * 0.05f;
 	}
 
 	private void Update() {
@@ -168,7 +198,9 @@ public class SubmarineController : MonoBehaviour {
 
 			//Interpolate engine
 			if(enginePower) {
-				engineThrustActual = Mathf.SmoothDamp(engineThrustActual, engineThrustTarget, ref engineVelocity, dampSmoothTime, dampMaxSpeedEngine);
+				engineThrustActual = Mathf.SmoothDamp(engineThrustActual, engineThrustTarget * (engineReverse ? -1 : 1), ref engineVelocity, dampSmoothTime, dampMaxSpeedEngine);
+			} else {
+				engineThrustActual = Mathf.SmoothDamp(engineThrustActual, 0, ref engineVelocity, dampSmoothTime, dampMaxSpeedEngine * 3);
 			}
 
 			//Interpolate rudder
