@@ -4,6 +4,10 @@ public class GameControl : MonoBehaviour {
 	public static GameControl gc;
 	public AudioController ac;
 
+	public Material redLED;
+	public Material lightOn;
+	public Material lightOff;
+
 	private void Awake() {
 		if (gc == null) { gc = this; }
 		if (ac == null) { ac = GetComponent<AudioController>(); }
