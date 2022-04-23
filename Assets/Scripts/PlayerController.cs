@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour {
 	public Vector3 deltaV = new Vector3();
 	public Vector3 lastV = new Vector3();
 	public float sensitivity = 10;
+	public Vector3 mouseMovement = new Vector3();
 	public Vector3 aimDir = new Vector3();
 	public Animator suitAnimator;
 	public Animator helmetAnimator;
@@ -29,9 +30,16 @@ public class PlayerController : MonoBehaviour {
 
 		deltaRot = view.transform.eulerAngles - lastRot;
 		deltaV = rb.velocity - lastV;
-		transform.localEulerAngles += new Vector3(0, Input.GetAxis("Mouse X") * sensitivity, 0);
-		float yrot = GameControl.ClampAngle(view.transform.localEulerAngles.x - Input.GetAxis("Mouse Y") * sensitivity, -89.5f, 89.5f);
-		view.transform.localEulerAngles = new Vector3(yrot, view.transform.localEulerAngles.y, view.transform.localEulerAngles.z);
+		
+		// transform.localEulerAngles += new Vector3(0, Input.GetAxis("Mouse X") * sensitivity, 0);
+		// float yrot = GameControl.ClampAngle(view.transform.localEulerAngles.x - Input.GetAxis("Mouse Y") * sensitivity, -89.5f, 89.5f);
+		// view.transform.localEulerAngles = new Vector3(yrot, view.transform.localEulerAngles.y, view.transform.localEulerAngles.z);
+
+		mouseMovement += new Vector3(-Input.GetAxis("Mouse Y") * sensitivity, Input.GetAxis("Mouse X") * sensitivity, 0);
+		mouseMovement = new Vector3(GameControl.ClampAngle(mouseMovement.x, -89.5f, 89.5f), mouseMovement.y, 0);
+		//transform.eulerAngles = new Vector3(0, mouseMovement.y, 0);
+		transform.localEulerAngles = new Vector3(0, mouseMovement.y, 0);
+		view.transform.eulerAngles = new Vector3(mouseMovement.x, view.transform.eulerAngles.y, 0);
 
 		if (Input.GetKeyDown(KeyCode.F)) {
 			suitAnimator.Play("suit_equip");

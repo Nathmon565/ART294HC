@@ -150,16 +150,17 @@ public class SubmarineController : MonoBehaviour {
 		transform.eulerAngles += transform.TransformVector(angularVelocity * Time.fixedDeltaTime);
 		transform.eulerAngles = new Vector3(GameControl.ClampAngle(transform.eulerAngles.x, -45, 45), transform.eulerAngles.y, GameControl.ClampAngle(transform.eulerAngles.z, -15, 15));
 
-		transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0, transform.eulerAngles.y, 0), Time.fixedDeltaTime / 5f);
+		transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z), Time.fixedDeltaTime / 5f);
+		transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, 0), Time.fixedDeltaTime);
 
 		//increase velocity
 		velocity += Time.fixedDeltaTime * new Vector3(0,
-			(-(ballastLevelFrontActual + ballastLevelBackActual)/2 + 0.5f) / 5f, //ballast
+			(-(ballastLevelFrontActual + ballastLevelBackActual)/2 + 0.5f) / 3f, //ballast
 			engineThrustActual); //engine
 		//rudder & ballast
 		angularVelocity += Time.fixedDeltaTime * new Vector3(
 			(ballastLevelFrontActual - ballastLevelBackActual) * 5,
-			2 * (rudderDirectionActual - 0.5f) * (velocity.z), //rudder
+			5 * (rudderDirectionActual - 0.5f) * (velocity.z), //rudder
 			0);
 
 		//slow dowm from friction/drag
