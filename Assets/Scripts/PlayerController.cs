@@ -18,6 +18,12 @@ public class PlayerController : MonoBehaviour {
 	public GameObject view;
 	public Rigidbody rb;
 	public float moveSpeed = 5;
+	public float interactionDistance = 3;
+	public bool lockCamera = false;
+	public Vector3 lockedMouseMovement;
+	public Vector3 originalMouseMovement;
+	public GameObject verticalArrows;
+	public GameObject horizontalArrows;
 	private void Awake() {
 		if (pc == null) { pc = this; } else { Destroy(gameObject); }
 		if (view == null) { view = Camera.main.gameObject; }
@@ -26,7 +32,38 @@ public class PlayerController : MonoBehaviour {
 
 	private void Update() {
 		//Debug.DrawRay(view.transform.position, view.transform.forward * HighlightPlus.HighlightManager.instance.maxDistance, Color.red);
-
+		verticalArrows.SetActive(false);
+		horizontalArrows.SetActive(false);
+		Debug.DrawRay(view.transform.position, view.transform.forward * interactionDistance, Color.red);
+		if(Physics.Raycast(view.transform.position, view.transform.forward, out RaycastHit hit , interactionDistance)) {
+			if(hit.transform.TryGetComponent<ControlBoardButton>(out ControlBoardButton button) || (hit.transform.childCount > 0 && hit.transform.GetChild(0).TryGetComponent<ControlBoardButton>(out button))) {
+				if(button.buttonType == ControlBoardButton.ButtonType.onoff && Input.GetMouseButtonDown(0)) {
+					button.ToggleState();
+				} else if(button.buttonType != ControlBoardButton.ButtonType.onoff) {
+					if(Input.GetMouseButtonDown(0)) {
+						lockCamera = true;
+						originalMouseMovement = mouseMovement;
+						lockedMouseMovement = mouseMovement;
+					} else if(Input.GetMouseButton(0) && lockCamera) {
+						//which axis to check (for rudder vs. other switches)
+						if(button.horizontal) { horizontalArrows.SetActive(true); } else { verticalArrows.SetActive(true); }
+						float movement = button.horizontal ? -(lockedMouseMovement.y - mouseMovement.y) : (lockedMouseMovement.x - mouseMovement.x);
+						float val = Mathf.Clamp(button.associatedValue + movement/sensitivity/3, 0, 1);
+						lockedMouseMovement = mouseMovement;
+						button.SetState(val);
+					} else if(Input.GetMouseButtonUp(0)) {
+						lockCamera = false;
+						mouseMovement = originalMouseMovement;
+					} else if(Input.GetMouseButtonDown(1)) {
+						button.SetState(0.5f);
+					}
+				}
+			} else {
+				lockCamera = false;
+				mouseMovement = originalMouseMovement;
+			}
+		}
+		
 
 		deltaRot = view.transform.eulerAngles - lastRot;
 		deltaV = rb.velocity - lastV;
@@ -35,12 +72,17 @@ public class PlayerController : MonoBehaviour {
 		// float yrot = GameControl.ClampAngle(view.transform.localEulerAngles.x - Input.GetAxis("Mouse Y") * sensitivity, -89.5f, 89.5f);
 		// view.transform.localEulerAngles = new Vector3(yrot, view.transform.localEulerAngles.y, view.transform.localEulerAngles.z);
 
+		
 		mouseMovement += new Vector3(-Input.GetAxis("Mouse Y") * sensitivity, Input.GetAxis("Mouse X") * sensitivity, 0);
-		mouseMovement = new Vector3(GameControl.ClampAngle(mouseMovement.x, -89.5f, 89.5f), mouseMovement.y, 0);
-		//transform.eulerAngles = new Vector3(0, mouseMovement.y, 0);
-		transform.localEulerAngles = new Vector3(0, mouseMovement.y, 0);
-		view.transform.eulerAngles = new Vector3(mouseMovement.x, view.transform.eulerAngles.y, 0);
-
+		//mouseMovement = new Vector3(GameControl.ClampAngle(mouseMovement.x, -89.5f, 89.5f), mouseMovement.y, 0);
+		if(!lockCamera) {
+			mouseMovement = new Vector3(Mathf.Clamp(mouseMovement.x, -89.5f, 89.5f), Mathf.Repeat(mouseMovement.y, 360), 0);
+			lockedMouseMovement = mouseMovement;
+			originalMouseMovement = mouseMovement;
+			//transform.eulerAngles = new Vector3(0, mouseMovement.y, 0);
+			transform.localEulerAngles = new Vector3(0, mouseMovement.y, 0);
+			view.transform.eulerAngles = new Vector3(mouseMovement.x, view.transform.eulerAngles.y, 0);
+		}
 		if (Input.GetKeyDown(KeyCode.F)) {
 			suitAnimator.Play("suit_equip");
 		}

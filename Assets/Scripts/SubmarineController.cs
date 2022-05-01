@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class SubmarineController : MonoBehaviour {
 	[Header("Controls")]
@@ -72,6 +73,7 @@ public class SubmarineController : MonoBehaviour {
 	[Header("Stats")]
 	[Range(0, 1)]
 	public float airQuality = 1;
+	public float speed;
 	public Vector3 velocity = Vector3.zero;
 	public Vector3 angularVelocity = Vector3.zero;
 	[Header("Settings")]
@@ -85,6 +87,10 @@ public class SubmarineController : MonoBehaviour {
 	public List<LightController> externalLightList;
 	public SubPropellor propellor;
 	public GameObject rudder;
+	public GameObject compass;
+	public TextMeshPro depthGauge;
+	[Header("References")]
+	public Coroutine pingCoroutine;
 
 	public float GetPumpWork() {
 		return Mathf.Abs(ballastLevelBackActual - ballastLevelBackTarget) + Mathf.Abs(ballastLevelFrontActual - ballastLevelFrontTarget);
@@ -102,13 +108,52 @@ public class SubmarineController : MonoBehaviour {
 		foreach(LightController l in isInternal ? internalLightList : externalLightList) {
 			l.SetActive(isActive);
 		}
-		if(isInternal) { internalLights = isActive; }
-		else { externalLights = isActive; }
+		// if(isInternal) { internalLights = isActive; }
+		// else { externalLights = isActive; }
 	}
 
 	public void SetButton(ControlBoardButton button, float value) {
 		if(button.associatedValue == value) { return; }
 		button.associatedValue = value;
+		button.UpdateVisual();
+	}
+
+	public void ReceiveCommand(ControlBoardButton button) {
+		if(button == buttonBallastFront) {
+			ballastLevelFrontTarget = button.associatedValue;
+		} else if(button == buttonBallastBack) {
+			ballastLevelBackTarget = button.associatedValue;
+		} else if(button == buttonBallastLink) {
+			ballastLink = button.associatedValue == 1;
+		} else if(button == buttonBallastPower) {
+			ballastPower = button.associatedValue == 1;
+		} else if(button == buttonEngineThrust) {
+			engineThrustTarget = button.associatedValue;
+		} else if(button == buttonEnginePower) {
+			enginePower = button.associatedValue == 1;
+		} else if(button == buttonEngineReverse) {
+			engineReverse = button.associatedValue == 1;
+		} else if(button == buttonRudderPower) {
+			rudderPower = button.associatedValue == 1;
+		} else if(button == buttonRudder) {
+			rudderDirectionTarget = button.associatedValue;
+		} else if(button == buttonSonarType) {
+			sonarDirectionType = button.associatedValue == 1;
+		} else if(button == buttonSonarDirectionDial) {
+			sonarDirection = button.associatedValue;
+		} else if(button == buttonSonarPower) {
+			sonarPower = button.associatedValue == 1;
+		} else if(button == buttonExternalLights) {
+			externalLights = button.associatedValue == 1;
+		} else if(button == buttonInternalLights) {
+			internalLights = button.associatedValue == 1;
+		} else if(button == buttonCo2Scrubber) {
+			co2Scrubber = button.associatedValue == 1;
+		} else if(button == buttonO2Compressor) {
+			o2Compressor = button.associatedValue == 1;
+		} else if(button == buttonAirflowVentilation) {
+			airflowVentilation = button.associatedValue == 1;
+		}
 		button.UpdateVisual();
 	}
 
@@ -147,25 +192,34 @@ public class SubmarineController : MonoBehaviour {
 		transform.position += transform.TransformVector(new Vector3(0, 0, velocity.z) * Time.deltaTime);
 		//transform.position += transform.TransformVector(velocity * Time.fixedDeltaTime);
 		//update rotation based on angular velocity
-		transform.eulerAngles += transform.TransformVector(angularVelocity * Time.fixedDeltaTime);
-		transform.eulerAngles = new Vector3(GameControl.ClampAngle(transform.eulerAngles.x, -45, 45), transform.eulerAngles.y, GameControl.ClampAngle(transform.eulerAngles.z, -15, 15));
+		transform.localEulerAngles += transform.TransformVector(angularVelocity) * Time.fixedDeltaTime;
+		transform.localEulerAngles = new Vector3(GameControl.ClampAngle(transform.localEulerAngles.x, -45, 45), transform.localEulerAngles.y, GameControl.ClampAngle(transform.localEulerAngles.z, -15, 15));
 
-		transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z), Time.fixedDeltaTime / 5f);
-		transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, 0), Time.fixedDeltaTime);
+		transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, 0);
 
 		//increase velocity
-		velocity += Time.fixedDeltaTime * new Vector3(0,
-			(-(ballastLevelFrontActual + ballastLevelBackActual)/2 + 0.5f) / 3f, //ballast
-			engineThrustActual); //engine
+		velocity += new Vector3(0,
+			(-(ballastLevelFrontActual + ballastLevelBackActual)/2 + 0.5f) / 10f, //ballast
+			engineThrustActual * 0.1f); //engine
 		//rudder & ballast
-		angularVelocity += Time.fixedDeltaTime * new Vector3(
-			(ballastLevelFrontActual - ballastLevelBackActual) * 5,
-			5 * (rudderDirectionActual - 0.5f) * (velocity.z), //rudder
+		angularVelocity += new Vector3(
+			(ballastLevelFrontActual - ballastLevelBackActual) * 0.2f,
+			(rudderDirectionActual - 0.5f) * (velocity.z) * 0.2f, //rudder
 			0);
 
-		//slow dowm from friction/drag
+		//slow down from friction/drag
 		velocity -= velocity * 0.01f;
-		angularVelocity -= angularVelocity * 0.05f;
+		angularVelocity -= new Vector3(angularVelocity.x * 0.2f, angularVelocity.y * 0.05f, angularVelocity.z * 0.1f);
+		// if(angularVelocity.magnitude > 0.05f) {
+		// 	angularVelocity -= angularVelocity * 0.05f;
+		// }
+		speed = velocity.magnitude;
+	}
+
+	public IEnumerator SonarPings() {
+		GameControl.gc.ac.PlaySound("ping", 0, buttonSonarPowerIndicator.transform);
+		yield return new WaitForSeconds(3);
+		pingCoroutine = StartCoroutine(SonarPings());
 	}
 
 	private void Update() {
@@ -211,23 +265,31 @@ public class SubmarineController : MonoBehaviour {
 			
 			//Sonar
 			if(sonarPower) {
+				if(pingCoroutine == null) {
+					pingCoroutine = StartCoroutine(SonarPings());
+				}
 				if(sonarDirectionType) {
 					
 				} else {
 
 				}
-			}
+			} else if(pingCoroutine != null) { StopCoroutine(pingCoroutine); pingCoroutine = null; }
 
 			//Lights
 			SetLights(true, internalLights);
 			SetLights(false, externalLights);
 		} else {
+			if(pingCoroutine != null) { StopCoroutine(pingCoroutine);  pingCoroutine = null; }
 			//Lights off
 			SetLights(true, false);
 			SetLights(false, false);
 			//Engine spooldown
 			engineThrustActual = Mathf.SmoothDamp(engineThrustActual, 0, ref engineVelocity, dampSmoothTime, dampMaxSpeedEngine * 3);
 		}
+
+		compass.transform.localEulerAngles = new Vector3(0, -transform.eulerAngles.y, 0);
+
+		depthGauge.text = "Depth: " + ((-transform.position.y).ToString("n1") + "m");
 		
 		UpdateVisuals();
 	}
