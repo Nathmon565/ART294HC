@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour {
 		if (pc == null) { pc = this; } else { Destroy(gameObject); }
 		if (view == null) { view = Camera.main.gameObject; }
 		if (rb == null) { rb = GetComponent<Rigidbody>(); }
+		Cursor.lockState = CursorLockMode.Locked;
 	}
 
 	private void Update() {
@@ -61,6 +62,12 @@ public class PlayerController : MonoBehaviour {
 			} else {
 				lockCamera = false;
 				mouseMovement = originalMouseMovement;
+			}
+			if(hit.transform.TryGetComponent<BulkheadDoor>(out BulkheadDoor door) || (hit.transform.parent != null && hit.transform.parent.TryGetComponent<BulkheadDoor>(out door))) {
+				if(Input.GetMouseButtonDown(0)) {
+					if(door.isOpen) { door.Close(); }
+					else { door.Open(); }
+				}
 			}
 		}
 		

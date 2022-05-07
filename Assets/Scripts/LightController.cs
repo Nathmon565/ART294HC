@@ -5,13 +5,13 @@ using UnityEngine;
 public class LightController : MonoBehaviour {
 	public bool isActive = false;
 	public int lightIndex = 0;
-	public List<Light> l;
+	public List<Light> l = new List<Light>();
 	private MeshRenderer mr;
 
 	private void Start() {
 		if(TryGetComponent<Light>(out Light light)) { l.Add(light); }
-		foreach(GameObject c in transform) {
-			if(TryGetComponent<Light>(out light)) { l.Add(light); }
+		foreach(Transform c in transform) {
+			if(c.TryGetComponent<Light>(out Light lt)) { l.Add(lt); }
 		}
 		mr = GetComponent<MeshRenderer>();
 		SetActive(false);

@@ -90,7 +90,22 @@ public class SubmarineController : MonoBehaviour {
 	public GameObject compass;
 	public TextMeshPro depthGauge;
 	[Header("References")]
+	public GameObject sonarCamera;
+	public GameObject helm;
+	public Material sonarScreenMaterial;
+	public Material blackScreenMaterial;
 	public Coroutine pingCoroutine;
+	[Header("Sounds")]
+	public AudioSource ambience;
+	public AudioSource groanAmbience;
+	public AudioSource reactorLoop;
+	public AudioSource engineLoop;
+	public AudioSource ballastFrontLoop;
+	public AudioSource ballastRearLoop;
+	public AudioSource pumpFrontLoop;
+	public AudioSource pumpRearLoop;
+	public AudioSource waterRushLoop;
+	
 
 	public float GetPumpWork() {
 		return Mathf.Abs(ballastLevelBackActual - ballastLevelBackTarget) + Mathf.Abs(ballastLevelFrontActual - ballastLevelFrontTarget);
@@ -186,6 +201,21 @@ public class SubmarineController : MonoBehaviour {
 		rudder.transform.localEulerAngles = new Vector3(rudder.transform.localEulerAngles.x, -(rudderDirectionActual-0.5f) * 45, rudder.transform.localEulerAngles.z);
 	}
 
+	private void Start() {
+		InitializeSounds();
+	}
+
+	private void OnTriggerEnter(Collider other) {
+		Debug.Log("collided with " + other.transform.name);
+		if(other.transform.root == transform) { return; }
+		if(velocity.magnitude > 5) {
+			GameControl.gc.ac.PlaySound("collilsion_death", transform);
+		}
+		velocity *= -0.25f;
+		angularVelocity *= 0;
+		GameControl.gc.ac.PlaySound("collision", transform);
+	}
+
 	private void FixedUpdate() {
 		//update position based on velocity
 		transform.position += new Vector3(0, velocity.y, 0) * Time.deltaTime;
@@ -214,12 +244,58 @@ public class SubmarineController : MonoBehaviour {
 		// 	angularVelocity -= angularVelocity * 0.05f;
 		// }
 		speed = velocity.magnitude;
+
+		//out of water
+		if(transform.position.y > 0) {
+			velocity += Physics.gravity * Time.fixedDeltaTime;
+		}
+		waterRushLoop.volume = velocity.magnitude/10;
+		waterRushLoop.pitch = velocity.magnitude/10;
 	}
 
 	public IEnumerator SonarPings() {
 		GameControl.gc.ac.PlaySound("ping", 0, buttonSonarPowerIndicator.transform);
 		yield return new WaitForSeconds(3);
 		pingCoroutine = StartCoroutine(SonarPings());
+	}
+
+	public void InitializeSounds() {
+		engineLoop = GameControl.gc.ac.PlaySound("engine_loop", transform, new Vector3(0, 0, -11));
+		reactorLoop = GameControl.gc.ac.PlaySound("reactor_loop", transform, new Vector3(0.5f, 0, -5));
+		reactorLoop.pitch = 0;
+		reactorLoop.volume = 0;
+
+		ballastFrontLoop = GameControl.gc.ac.PlaySound("ballast_fill", transform, new Vector3(0, -1.25f, 6.5f));
+		ballastFrontLoop.volume = 0;
+		ballastRearLoop = GameControl.gc.ac.PlaySound("ballast_fill", transform, new Vector3(0, -1.25f, -6));
+		ballastRearLoop.volume = 0;
+		pumpFrontLoop = GameControl.gc.ac.PlaySound("pump_loop", transform, new Vector3(0, -1.25f, 6.5f));
+		pumpFrontLoop.volume = 0;
+		pumpRearLoop = GameControl.gc.ac.PlaySound("pump_loop", transform, new Vector3(0, -1.25f, -6));
+		pumpRearLoop.volume = 0;
+
+		waterRushLoop = GameControl.gc.ac.PlaySound("water_movement", transform);
+		waterRushLoop.volume = 0;
+		waterRushLoop.pitch = 0;
+
+		StartCoroutine(RandomAmbience());
+		StartCoroutine(RandomHullGroan());
+
+		
+	}
+
+	public IEnumerator RandomAmbience() {
+		ambience = GameControl.gc.ac.PlaySound("ambience", transform);
+		yield return new WaitUntil(()=> ambience == null);
+		yield return new WaitForSeconds(Random.Range(25, 80));
+		StartCoroutine(RandomAmbience());
+	}
+
+	public IEnumerator RandomHullGroan() {
+		groanAmbience = GameControl.gc.ac.PlaySound("hull_groan", transform);
+		yield return new WaitUntil(()=> groanAmbience == null);
+		yield return new WaitForSeconds(Random.Range(25, 80));
+		StartCoroutine(RandomHullGroan());
 	}
 
 	private void Update() {
@@ -232,6 +308,9 @@ public class SubmarineController : MonoBehaviour {
 
 		//Reactor power
 		if(isReactorOn) {
+			reactorLoop.pitch = Mathf.MoveTowards(reactorLoop.pitch, 1, Time.deltaTime / 5);
+			reactorLoop.volume = Mathf.MoveTowards(reactorLoop.volume, 1, Time.deltaTime / 5);
+
 			//Oxygen compressor (for air tank)
 			if(o2Compressor && o2Tank != null) {
 				if(o2Tank.AddAir()) {
@@ -248,7 +327,15 @@ public class SubmarineController : MonoBehaviour {
 			//Interpolate ballasts
 			if(ballastPower) {
 				ballastLevelFrontActual = Mathf.SmoothDamp(ballastLevelFrontActual, ballastLevelFrontTarget, ref ballastLevelFrontVelocity, dampSmoothTime, dampMaxSpeedBallast);
+				float fv = Mathf.Abs(ballastLevelFrontVelocity) * 10;
+				if(ballastLevelFrontVelocity > 0) { ballastFrontLoop.volume = fv; }
+				pumpFrontLoop.volume = fv;
+				pumpFrontLoop.pitch = fv;
 				ballastLevelBackActual = Mathf.SmoothDamp(ballastLevelBackActual, ballastLevelBackTarget, ref ballastLevelBackVelocity, dampSmoothTime, dampMaxSpeedBallast);
+				float bv = Mathf.Abs(ballastLevelBackVelocity) * 10;
+				if(ballastLevelBackVelocity > 0) { ballastRearLoop.volume = fv; }
+				pumpRearLoop.volume = bv;
+				pumpRearLoop.pitch = bv;
 			}
 
 			//Interpolate engine
@@ -265,27 +352,46 @@ public class SubmarineController : MonoBehaviour {
 			
 			//Sonar
 			if(sonarPower) {
+				sonarCamera.transform.localEulerAngles = new Vector3(0, sonarDirection * 360f, 0);
 				if(pingCoroutine == null) {
 					pingCoroutine = StartCoroutine(SonarPings());
+					Material[] mats = helm.GetComponent<MeshRenderer>().materials;
+					mats[3] = sonarScreenMaterial;
+					helm.GetComponent<MeshRenderer>().materials = mats;
 				}
 				if(sonarDirectionType) {
 					
 				} else {
 
 				}
-			} else if(pingCoroutine != null) { StopCoroutine(pingCoroutine); pingCoroutine = null; }
+			} else if(pingCoroutine != null) {
+				Material[] mats = helm.GetComponent<MeshRenderer>().materials;
+				mats[3] = blackScreenMaterial;
+				helm.GetComponent<MeshRenderer>().materials = mats;
+				StopCoroutine(pingCoroutine);
+				pingCoroutine = null;
+			}
 
 			//Lights
 			SetLights(true, internalLights);
 			SetLights(false, externalLights);
 		} else {
-			if(pingCoroutine != null) { StopCoroutine(pingCoroutine);  pingCoroutine = null; }
+			reactorLoop.pitch = Mathf.MoveTowards(reactorLoop.pitch, 0, Time.deltaTime / 5);
+			reactorLoop.volume = Mathf.MoveTowards(reactorLoop.volume, 0, Time.deltaTime / 5);
+			if(pingCoroutine != null) {
+				Material[] mats = helm.GetComponent<MeshRenderer>().materials;
+				mats[3] = blackScreenMaterial;
+				helm.GetComponent<MeshRenderer>().materials = mats;
+				StopCoroutine(pingCoroutine);  pingCoroutine = null;
+			}
 			//Lights off
 			SetLights(true, false);
 			SetLights(false, false);
 			//Engine spooldown
 			engineThrustActual = Mathf.SmoothDamp(engineThrustActual, 0, ref engineVelocity, dampSmoothTime, dampMaxSpeedEngine * 3);
 		}
+		engineLoop.volume = engineThrustActual;
+		engineLoop.pitch = engineThrustActual/3 + 0.5f;
 
 		compass.transform.localEulerAngles = new Vector3(0, -transform.eulerAngles.y, 0);
 
